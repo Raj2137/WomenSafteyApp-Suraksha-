@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "402680948013",
+    "project_id": "womensafteyapp-cf4a8",
+    "storage_bucket": "womensafteyapp-cf4a8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:402680948013:android:587aa8422693b0aebe1fa4",
+        "android_client_info": {
+          "package_name": "com.example.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtUntLNv_pF9RXx7j5VlZA8rk2RCzVZMI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
