@@ -1,3 +1,4 @@
+import 'package:app/child/bottompage.dart';
 import 'package:flutter/material.dart';
 import 'package:app/components/customtextflied.dart';
 import 'package:app/components/primarybutton.dart';
@@ -5,7 +6,10 @@ import 'package:app/components/secondarybutton.dart';
 import 'package:app/child/registerchild.dart';
 import 'package:app/utils/constrants.dart';
 import 'package:app/parent/parentregister.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:app/parent/parentlogin.dart';
+import 'package:app/db/sharedpreference.dart';
 
 class LoginScreen extends StatefulWidget {
 @override
@@ -18,17 +22,60 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _formData = Map<String, Object>();
   bool isLoading = false;
-   _onSubmit() async {
+
+ 
+  _onSubmit() async {
     _formKey.currentState!.save();
-      print(_formData['email']);
-      print(_formData['password']);
+   try {
+      setState(() {
+        isLoading = true;
+      });
+  UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+    email: _formData['email'].toString(),
+    password: _formData['password'].toString()
+  );
+  if(userCredential.user !=null){
+    setState(() {
+        isLoading = false;
+      });
+    FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .get()
+            .then((value) {
+          if (value['type'] == 'parent') {
+            print(value['type']);
+            MySharedPrefference.saveUserType('parent');
+            goTo(context, ParentHomeScreen());
+          } else {
+            MySharedPrefference.saveUserType('child');
 
-   }
-  @override
-  // void initState() {
-  //   super.initState();
-  // }
+            goTo(context, BottomPage());
+          }
+            });
+    
+  }
+} on FirebaseAuthException catch (e) {
+   setState(() {
+        isLoading = false;
+      });
+      dialogueBox(context, 'No user found for that email.');
+      if (e.code == 'user-not-found') {
+        dialogueBox(context, 'No user found for that email.');
+        print('No user found for that email.');
+      } else if (e.code == 'wrong-password') {
+        dialogueBox(context, 'Wrong password provided for that user.');
+        print('Wrong password provided for that user.');
+      }
+  
+} 
+    print(_formData['email']);
+    print(_formData['password']);
+  }
 
+
+
+@override
 Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
@@ -115,7 +162,7 @@ Widget build(BuildContext context) {
                                     title: 'LOGIN',
                                     onPressed: () 
                                     {
-                                      progressIndicator(context);
+                                      // progressIndicator(context);
                                       if (_formKey.currentState!.validate()) {
                                         _onSubmit();
                                       }

@@ -43,6 +43,20 @@ dependencies:
   fluttertoast: ^8.0.9
   firebase_core: ^2.24.2
   firebase_auth: ^4.16.0
+  cloud_firestore: ^4.14.0
+  shared_preferences: ^2.2.2
+  sqflite: ^2.3.2
+  permission_handler: ^11.3.0
+  contacts_service: ^0.6.3
+  firebase_storage: ^11.6.0
+  image_picker: ^1.0.7
+  uuid: ^4.3.3
+  geocoding: ^2.2.0
+  geolocator: ^11.0.0
+  background_sms: ^0.0.4
+  cached_network_image: ^3.3.1
+  flutter_rating_bar: ^4.0.1
+  shake: ^2.2.0
 
 dev_dependencies:
   flutter_test:

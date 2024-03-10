@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:app/widgets/loginscreen.dart';
 
 Color primaryColor = Color(0xfffc3b77);
 
@@ -20,7 +19,14 @@ dialogueBox(BuildContext context, String text) {
   );
 }
 
-Widget progressIndicator(BuildContext context) {
+
+  // return Center(
+  //     child: CircularProgressIndicator(
+  //   backgroundColor: primaryColor,
+  //   color: Colors.red,
+  //   strokeWidth: 7,
+  // ));
+ Widget progressIndicator(BuildContext context) {
   return Center(
       child: CircularProgressIndicator(
     backgroundColor: primaryColor,

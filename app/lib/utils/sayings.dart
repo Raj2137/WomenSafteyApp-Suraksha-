@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 List sweetSayings=[
   "Your presence, lights up the whole room",

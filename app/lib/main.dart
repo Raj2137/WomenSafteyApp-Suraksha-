@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'widgets/loginscreen.dart';
 import 'package:firebase_core/firebase_core.dart';
-
+import 'package:app/db/sharedpreference.dart';
+import 'package:app/parent/parentlogin.dart';
+import 'package:app/utils/constrants.dart';
+import 'package:app/child/bottompage.dart';
+import 'package:app/widgets/loginscreen.dart';
 
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await MySharedPrefference.init();
   runApp(const MyApp());
 }
 
@@ -29,7 +32,22 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home:  LoginScreen(),
+      home: FutureBuilder(
+        future: MySharedPrefference.getUserType(),
+        builder: (BuildContext context, AsyncSnapshot snapshot){
+          if(snapshot.data == ""){
+            return LoginScreen();
+          }
+          if(snapshot.data=="child"){
+            return BottomPage();
+          }
+          if(snapshot.data=="parent"){
+            return ParentHomeScreen();
+          }
+
+          return progressIndicator(context);
+        }
+      )
     );
   }
 }

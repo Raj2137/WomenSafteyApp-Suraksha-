@@ -4,7 +4,9 @@ import 'package:app/components/primarybutton.dart';
 import 'package:app/components/secondarybutton.dart';
 import 'package:app/utils/constrants.dart';
 import 'package:app/widgets/loginscreen.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:app/model/user_model.dart';
 
 
 class RegisterParentScreen extends StatefulWidget {
@@ -19,11 +21,61 @@ class _RegisterParentScreenState extends State<RegisterParentScreen> {
 
   final _formData = Map<String, Object>();
   bool isLoading = false;
- _onSubmit() async {
 
+ _onSubmit() async {
     _formKey.currentState!.save();
-    showDialog(context: context, build)
-    
+      if (_formData['password'] != _formData['rpassword']) {
+      dialogueBox(context, 'password and retype password should be same');
+    } else {
+      progressIndicator(context);
+
+      try {
+        setState(() {
+        isLoading = true;
+          });
+        UserCredential userCredential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
+                email: _formData['gemail'].toString(),
+                password: _formData['password'].toString());
+        if (userCredential.user != null) {
+          final v = userCredential.user!.uid;
+          DocumentReference<Map<String, dynamic>> db =
+              FirebaseFirestore.instance.collection('users').doc(v);
+          final user = UserModel(
+              name: _formData['name'].toString(),
+              phone: _formData['phone'].toString(),
+              childEmail: _formData['cemail'].toString(),
+              guardianEmail: _formData['gemail'].toString(),
+              id: v,
+              type: 'parent'
+              );
+          final jsonData = user.toJson();
+          await db.set(jsonData).whenComplete(() {
+            goTo(context, LoginScreen());
+            setState(() {
+              isLoading = false;
+            });
+          });
+        }
+      
+        } on FirebaseAuthException catch(e){
+          setState(() {
+              isLoading = false;
+            });
+           if (e.code == 'weak-password') {
+          print('The password provided is too weak.');
+          dialogueBox(context, 'The password provided is too weak.');
+        } else if (e.code == 'email-already-in-use') {
+          print('The account already exists for that email.');
+          dialogueBox(context, 'The account already exists for that email.');
+        }
+        } catch(e){
+          setState(() {
+              isLoading = false;
+            });
+          dialogueBox(context, e.toString());
+        }
+    }
  }
 @override
 Widget build(BuildContext context) {
@@ -31,11 +83,11 @@ Widget build(BuildContext context) {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
-          // child: Stack(
-            // children: [
-            //   isLoading
-            //       ? progressIndicator(context)
-                 child : SingleChildScrollView(
+          child: Stack(
+            children: [
+              isLoading
+                  ? progressIndicator(context)
+                  : SingleChildScrollView(
                       child: Column(
                         children: [
                           Container(
@@ -104,7 +156,7 @@ Widget build(BuildContext context) {
                                     keyboardtype: TextInputType.emailAddress,
                                     prefix: Icon(Icons.person),
                                     onsave: (email) {
-                                      _formData['cemail'] = email ?? "";
+                                      _formData['gemail'] = email ?? "";
                                     },
                                     validate: (email) {
                                       if (email!.isEmpty ||
@@ -112,6 +164,7 @@ Widget build(BuildContext context) {
                                           !email.contains("@")) {
                                         return 'enter correct email';
                                       }
+                                      return null;
                                     },
                                   ),
                                   CustomTextField(
@@ -128,6 +181,7 @@ Widget build(BuildContext context) {
                                           !email.contains("@")) {
                                         return 'enter correct email';
                                       }
+                                      return null;
                                     },
                                   ),
                                   CustomTextField(
@@ -198,8 +252,8 @@ Widget build(BuildContext context) {
                         ],
                       ),
                     ),
-            // ],
-          // ),
+            ],
+          ),
         ),
       ),
     );
