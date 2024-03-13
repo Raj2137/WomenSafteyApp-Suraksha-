@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 List sweetSayings=[
   "Your presence, lights up the whole room",
   "We admire, Your strong personality",
-  "wtf",
-  "wana",
-  "gana",
-  "kala jamun",
+  "Your presence, lights up the whole room",
+  "We admire, Your strong personality",
+  "Your presence, lights up the whole room",
+  "We admire, Your strong personality",
 ];
 
 class CustomAppBar extends StatelessWidget {

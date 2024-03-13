@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -60,30 +61,19 @@ class _MessageTextFieldState extends State<MessageTextField> {
   }
 
   Future _getCurrentLocation() async {
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      Fluttertoast.showToast(msg: "Location permissions are  denind");
-      if (permission == LocationPermission.deniedForever) {
-        Fluttertoast.showToast(
-            msg: "Location permissions are permanently denind");
-      }
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      print('Current Location: $position');
+      _curentPosition= position;
+      _getCurrentAddress();
+      // Handle the obtained location as needed
+    } catch (e) {
+      print('Error getting current location: $e');
     }
-    Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.high,
-            forceAndroidLocationManager: true)
-        .then((Position position) {
-      setState(() {
-        _curentPosition = position;
-        print(_curentPosition!.latitude);
-        _getAddressFromLatLon();
-      });
-    }).catchError((e) {
-      Fluttertoast.showToast(msg: e.toString());
-    });
   }
 
-  _getAddressFromLatLon() async {
+  _getCurrentAddress() async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
           _curentPosition!.latitude, _curentPosition!.longitude);
@@ -196,8 +186,9 @@ class _MessageTextFieldState extends State<MessageTextField> {
               await _getCurrentLocation();
               Future.delayed(Duration(seconds: 2), () {
                 message =
-                    "https://www.google.com/maps/search/?api=1&query=${_curentPosition!.latitude}%2C${_curentPosition!.longitude}. $_curentAddress";
-                sendMessage(message!, "link");
+                    "https://www.google.com/maps/search/?api=1&query=${_curentPosition!.latitude}%2C${_curentPosition!.longitude}";
+                print(message);
+                sendMessage(message!, 'link');
               });
             }),
             chatsIcon(Icons.camera_alt, "Camera", () async {

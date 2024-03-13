@@ -1,12 +1,11 @@
+import 'package:app/db/dbserverces.dart';
+import 'package:app/model/contactsm.dart';
 import 'package:background_sms/background_sms.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:app/db/dbserverces.dart';
-import 'package:app/model/contactsm.dart';
-import 'package:app/components/primarybutton.dart';
 
 class SafeHome extends StatefulWidget {
   @override
@@ -19,6 +18,7 @@ class _SafeHomeState extends State<SafeHome> {
   LocationPermission? permission;
   _getPermission() async => await [Permission.sms].request();
   _isPermissionGranted() async => await Permission.sms.status.isGranted;
+
   _sendSms(String phoneNumber, String message, {int? simSlot}) async {
     SmsStatus result = await BackgroundSms.sendMessage(
         phoneNumber: phoneNumber, message: message, simSlot: 1);
@@ -33,7 +33,7 @@ class _SafeHomeState extends State<SafeHome> {
   Future<bool> _handleLocationPermission() async {
     bool serviceEnabled;
     LocationPermission permission;
-
+    
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -60,23 +60,20 @@ class _SafeHomeState extends State<SafeHome> {
   }
 
   _getCurrentLocation() async {
-    final hasPermission = await _handleLocationPermission();
-    if (!hasPermission) return;
-    await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        forceAndroidLocationManager: true)
-        .then((Position position) {
-      setState(() {
-        _curentPosition = position;
-        print(_curentPosition!.latitude);
-        _getAddressFromLatLon();
-      });
-    }).catchError((e) {
-      Fluttertoast.showToast(msg: e.toString());
-    });
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      print('Current Location: $position');
+      _curentPosition= position;
+      // print(_curentPosition);
+      _getCurrentAddress();
+      // Handle the obtained location as needed
+    } catch (e) {
+      print('Error getting current location: $e');
+    }
   }
 
-  _getAddressFromLatLon() async {
+  _getCurrentAddress() async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
           _curentPosition!.latitude, _curentPosition!.longitude);
@@ -125,7 +122,7 @@ class _SafeHomeState extends State<SafeHome> {
                 PrimaryButton(
                     title: "SEND ALERT",
                     onPressed: () async {
-                      String recipients = "";
+                      
                       List<TContact> contactList =
                       await DatabaseHelper().getContactList();
                       print(contactList.length);
@@ -134,8 +131,7 @@ class _SafeHomeState extends State<SafeHome> {
                             msg: "emergency contact is empty");
                       } else {
                         String messageBody =
-                            "https://www.google.com/maps/search/?api=1&query=${_curentPosition!.latitude}%2C${_curentPosition!.longitude}. $_curentAddress";
-
+                            "https://www.google.com/maps/search/?api=1&query=${_curentPosition!.latitude}%2C${_curentPosition!.longitude}";
                         if (await _isPermissionGranted()) {
                           contactList.forEach((element) {
                             _sendSms("${element.number}",
